@@ -1,0 +1,11 @@
+edit->logged edit
+python:
+	capture log
+	strip apply statements
+	build iterative commands as lines of text
+	create update python file
+generated:
+	if no status mask, create one
+		-status mask shows the current state of all images in the pipeline
+	steps are saved as lines of text
+	generated python file to call update lines
