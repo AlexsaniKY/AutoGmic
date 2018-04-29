@@ -29,7 +29,17 @@ def capture(subset = None):
 	with open(commands_path, 'a') as command_file:
 		for pair in commands:
 			command_file.write(' '.join(pair))
+			command_file.write(' ')
+			if subset is None:
+				command_file.write("*")
+			else:
+				command_file.write(subset)
 			command_file.write('\n')
+			
+	# subsets_path = "".join((os.getcwd(), r'\subsets.txt'))
+	# with open(subsets_path, 'a'):
+		# if(subset is None):
+		
 
 if __name__ == "__main__":
 	#subprocess.call(["gmic","x_shadebobs"])
