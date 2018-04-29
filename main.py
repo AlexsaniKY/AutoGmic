@@ -1,4 +1,5 @@
 import subprocess, os
+from pathlib import Path
 
 print(__file__)#this file's directory
 print(os.getcwd())#the directory this file was called from
@@ -16,9 +17,17 @@ def filter_commands(input):
 			if statements[1] == 'Command:' and statements[4][-8:] != '_preview':
 				commands.append(statements[-2:])
 	return commands
+	
 
 if __name__ == "__main__":
 	#subprocess.call(["gmic","x_shadebobs"])
 	commands = []
 	with open_log() as f:
-		print(filter_commands(line for line in f))
+		commands = filter_commands(line for line in f)
+	
+	commands_path = "".join((os.getcwd(), r'\commands.txt'))
+	with open(commands_path, 'a') as command_file:
+		for pair in commands:
+			command_file.write(' '.join(pair))
+			command_file.write('\n')
+		
