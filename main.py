@@ -1,8 +1,10 @@
-import subprocess, os
+import subprocess
+import sys
+import os
 from pathlib import Path
 
-print(__file__)#this file's directory
-print(os.getcwd())#the directory this file was called from
+#print(__file__)     #this file's directory
+#print(os.getcwd())  #the directory this file was called from
 
 def open_log(): 
 	if os.name is 'nt':
@@ -18,9 +20,7 @@ def filter_commands(input):
 				commands.append(statements[-2:])
 	return commands
 	
-
-if __name__ == "__main__":
-	#subprocess.call(["gmic","x_shadebobs"])
+def capture(subset = None):
 	commands = []
 	with open_log() as f:
 		commands = filter_commands(line for line in f)
@@ -30,4 +30,9 @@ if __name__ == "__main__":
 		for pair in commands:
 			command_file.write(' '.join(pair))
 			command_file.write('\n')
+
+if __name__ == "__main__":
+	#subprocess.call(["gmic","x_shadebobs"])
+	if 'capture' in sys.argv:
+		capture()
 		
