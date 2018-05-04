@@ -51,19 +51,46 @@ def add_subset(subset, file_names):
 			subset_file.write("\n")
 			
 def walk_input_directory():
-	directories = {}
-	sets = {}
+	#directories = {}
+	sets_dict = {"*": set()}
 	#each folder is a key in sets, and its subdirectories are saved in directories
-	for path, names, files in os.walk("".join((os.getcwd(), r'\input'))):
-		this_folder = path.split("\\")[-1]
+	parent_dir = "".join((os.getcwd(), r'\input'))
+	print(parent_dir)
+	for path, names, files in os.walk("".join((os.getcwd(), r'\input')), topdown = False):
+		
+		this_folder = os.path.split(path)[-1]
+		# if there are files in the folder, store them in the set
+		if files:
+			sets_dict[this_folder] = set()
+			for f in files:
+				f_name = os.path.join(path, f)[len(parent_dir):]
+				print(f_name)
+				sets_dict[this_folder].add(f_name)
+				sets_dict["*"].add(f_name)
+				
+		#if there are subdirectories, merge their sets into this one
 		if names:
-			directories[this_folder] = names
-		sets[this_folder] = files
+			# make sure we have a set to store into
+			if this_folder not in sets_dict:
+				sets_dict[this_folder] = set()
+			#store the subdirectory sets in this set, ignoring empty subdirectories
+			for directory in names:
+				if directory in sets_dict:
+					sets_dict[this_folder].update(sets_dict[directory])
+			#if this and all lower subdirectories were empty,
+			# don't save the folder's contents
+			if not sets_dict[this_folder]:
+				del sets_dict[this_folder]
+				
 	#NEEDS TO ITERATE BACKWARDS
-	for parent, subfolders in directories.items():
-		sets[parent].extend(sets[subfolders])
-	print(directories)
-	print(sets)
+	# for parent, subfolders in directories.items():
+		# sets[parent].extend(sets[subfolders])
+	# print(directories)
+	
+	for k, v in sets_dict.items():
+		print(k + ": ")
+		for i in sorted(v):
+			print("\t" + i)
 
 if __name__ == "__main__":
 	#subprocess.call(["gmic","x_shadebobs"])
