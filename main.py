@@ -57,15 +57,26 @@ def walk_input_directory():
 	parent_dir = "".join((os.getcwd(), r'\input'))
 	print(parent_dir)
 	for path, names, files in os.walk("".join((os.getcwd(), r'\input')), topdown = False):
-		
+		#set the folder name to the lowest folder we are searching
 		this_folder = os.path.split(path)[-1]
-		# if there are files in the folder, store them in the set
-		if files:
-			sets_dict[this_folder] = set()
+		
+		#don't store the parent input folder as a named set
+		if path == parent_dir:
+			this_folder = "*"
+			
+		#if there are files in the folder, store them in the set
+		if files:		
+			#initialize
+			if this_folder not in sets_dict:
+				sets_dict[this_folder] = set()
+			
 			for f in files:
+				#save each file by relative path to the parent folder
 				f_name = os.path.join(path, f)[len(parent_dir):]
-				print(f_name)
+				#add for this folder's set
 				sets_dict[this_folder].add(f_name)
+				#add to universal set, may be redundant 
+				#but won't be costly enough to need to separate the logic
 				sets_dict["*"].add(f_name)
 				
 		#if there are subdirectories, merge their sets into this one
@@ -77,16 +88,11 @@ def walk_input_directory():
 			for directory in names:
 				if directory in sets_dict:
 					sets_dict[this_folder].update(sets_dict[directory])
-			#if this and all lower subdirectories were empty,
-			# don't save the folder's contents
-			if not sets_dict[this_folder]:
-				del sets_dict[this_folder]
-				
-	#NEEDS TO ITERATE BACKWARDS
-	# for parent, subfolders in directories.items():
-		# sets[parent].extend(sets[subfolders])
-	# print(directories)
-	
+		#if this and all lower subdirectories were empty,
+		#don't save the folder's contents
+		if not sets_dict[this_folder]:
+			del sets_dict[this_folder]
+
 	for k, v in sets_dict.items():
 		print(k + ": ")
 		for i in sorted(v):
