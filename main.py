@@ -1,4 +1,5 @@
 import subprocess
+import argparse
 import sys
 import os
 from pathlib import Path
@@ -100,8 +101,16 @@ def walk_input_directory():
 
 if __name__ == "__main__":
 	#subprocess.call(["gmic","x_shadebobs"])
-	if 'capture' in sys.argv:
-		capture()
-	else:
-		walk_input_directory()
+	cli_parser = argparse.ArgumentParser(description="Allows automatic captured processing of multiple organized images through Gmic's command line interface")
+	command_parser = cli_parser.add_subparsers(dest="command")
+	init_parser    = command_parser.add_parser("init")
+	capture_parser = command_parser.add_parser("capture")
+	inspect_parser = command_parser.add_parser("inspect")
+	flush_parser   = command_parser.add_parser("flush")
+	
+	input = cli_parser.parse_args()
+	print(input)
+
+
+	#walk_input_directory()
 		
