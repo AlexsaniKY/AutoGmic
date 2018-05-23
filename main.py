@@ -94,12 +94,32 @@ def walk_input_directory():
 		if not sets_dict[this_folder]:
 			del sets_dict[this_folder]
 
-	for k, v in sets_dict.items():
-		print(k + ": ")
-		s = sorted(v)
-		for i in s:
-			print("\t" + i)
-	return sets_dict		
+	# for k, v in sets_dict.items():
+		# print(k + ": ")
+		# s = sorted(v)
+		# for i in s:
+			# print("\t" + i)
+	return sets_dict
+	
+def command_init(command):
+	pass
+	
+def command_capture(command):
+	pass
+	
+def command_inspect(command):
+	commands = []
+	with open_log() as f:
+		commands = filter_commands(line for line in f)
+	for i, c in enumerate(commands, 1):
+		print(str(i) + ": " + " ".join(c))
+
+	
+def command_flush(command):
+	pass
+	
+def command_apply(command):
+	pass
 	
 def command_walk(command):
 	walk_input_directory()
@@ -109,10 +129,12 @@ if __name__ == "__main__":
 	cli_parser = argparse.ArgumentParser(description="Allows automatic captured processing of multiple organized images through Gmic's command line interface")
 	command_parser = cli_parser.add_subparsers(dest="command")
 	commands = {}
+	
 	#initialize directory
 	init_parser    = command_parser.add_parser("init", 
 						description = "initialize directory for tracking, capturing, and processing operations on a set of images")
-	commands["init"] = None
+	commands["init"] = command_init
+	
 	#capture commands
 	capture_parser = command_parser.add_parser("capture", 
 						description = "captures a series of commands on a set of images")
@@ -120,11 +142,13 @@ if __name__ == "__main__":
 						help = "the amount of commands to capture. Omit to capture all commands.  Must be entered first to allow maximum flexibility in allowed folder/group names")
 	capture_parser.add_argument("groups", nargs = argparse.REMAINDER, 
 						help = "list of all groups this is applied to.  Omit to affect all images.")
-	commands["capture"] = None
+	commands["capture"] = command_capture
+	
 	#inspect uncaptured commands
 	inspect_parser = command_parser.add_parser("inspect", 
 						description = "inspect a series of actions not captured yet from the gmic logfile")
-	commands["inspect"] = None
+	commands["inspect"] = command_inspect
+	
 	#flush unneeded commands
 	flush_parser   = command_parser.add_parser("flush", 
 						description = "flush a series of commands from the gmic logfile")
@@ -132,11 +156,13 @@ if __name__ == "__main__":
 						help = "amount of commands to remove from gmic logfile, starting with the oldest")
 	flush_parser.add_argument("-a" , action = "store_true", 
 						help = "flush all commands from logfile.  Cannot specify with a given amount simultaneously")
-	commands["flush"] = None
+	commands["flush"] = command_flush
+	
 	#apply commands to image(s)
 	apply_parser   = command_parser.add_parser("apply", description = "apply set of commands to one or more images")
 	commands["apply"] = None
-	#
+	
+	#walk input directory
 	walk_parser    = command_parser.add_parser("walk", description = "walk the input directory and set the group names from it")
 	commands["walk"] = command_walk
 	
