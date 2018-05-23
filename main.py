@@ -96,8 +96,13 @@ def walk_input_directory():
 
 	for k, v in sets_dict.items():
 		print(k + ": ")
-		for i in sorted(v):
+		s = sorted(v)
+		for i in s:
 			print("\t" + i)
+	return sets_dict		
+	
+def command_walk(command):
+	walk_input_directory()
 
 if __name__ == "__main__":
 	#main parser and the parent to allow splitting on the first argument
@@ -133,12 +138,12 @@ if __name__ == "__main__":
 	commands["apply"] = None
 	#
 	walk_parser    = command_parser.add_parser("walk", description = "walk the input directory and set the group names from it")
-	commands["walk"] = None
+	commands["walk"] = command_walk
 	
 	input = cli_parser.parse_args()
 	print(input)
 	
 	commands[input.command](input)
 
-	#walk_input_directory()
+
 		
