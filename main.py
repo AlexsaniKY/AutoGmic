@@ -103,9 +103,11 @@ if __name__ == "__main__":
 	#main parser and the parent to allow splitting on the first argument
 	cli_parser = argparse.ArgumentParser(description="Allows automatic captured processing of multiple organized images through Gmic's command line interface")
 	command_parser = cli_parser.add_subparsers(dest="command")
+	commands = {}
 	#initialize directory
 	init_parser    = command_parser.add_parser("init", 
 						description = "initialize directory for tracking, capturing, and processing operations on a set of images")
+	commands["init"] = None
 	#capture commands
 	capture_parser = command_parser.add_parser("capture", 
 						description = "captures a series of commands on a set of images")
@@ -113,9 +115,11 @@ if __name__ == "__main__":
 						help = "the amount of commands to capture. Omit to capture all commands.  Must be entered first to allow maximum flexibility in allowed folder/group names")
 	capture_parser.add_argument("groups", nargs = argparse.REMAINDER, 
 						help = "list of all groups this is applied to.  Omit to affect all images.")
+	commands["capture"] = None
 	#inspect uncaptured commands
 	inspect_parser = command_parser.add_parser("inspect", 
 						description = "inspect a series of actions not captured yet from the gmic logfile")
+	commands["inspect"] = None
 	#flush unneeded commands
 	flush_parser   = command_parser.add_parser("flush", 
 						description = "flush a series of commands from the gmic logfile")
@@ -123,12 +127,15 @@ if __name__ == "__main__":
 						help = "amount of commands to remove from gmic logfile, starting with the oldest")
 	flush_parser.add_argument("-a" , action = "store_true", 
 						help = "flush all commands from logfile.  Cannot specify with a given amount simultaneously")
+	commands["flush"] = None
 	#apply commands to image(s)
 	apply_parser   = command_parser.add_parser("apply", description = "apply set of commands to one or more images")
+	commands["apply"] = None
 	
 	input = cli_parser.parse_args()
 	print(input)
-
+	
+	commands[input.command](input)
 
 	#walk_input_directory()
 		
