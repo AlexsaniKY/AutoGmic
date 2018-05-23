@@ -131,6 +131,9 @@ if __name__ == "__main__":
 	#apply commands to image(s)
 	apply_parser   = command_parser.add_parser("apply", description = "apply set of commands to one or more images")
 	commands["apply"] = None
+	#
+	walk_parser    = command_parser.add_parser("walk", description = "walk the input directory and set the group names from it")
+	commands["walk"] = None
 	
 	input = cli_parser.parse_args()
 	print(input)
