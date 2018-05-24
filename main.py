@@ -7,6 +7,14 @@ from pathlib import Path
 #print(__file__)     #this file's directory
 #print(os.getcwd())  #the directory this file was called from
 
+class GmicLog:
+	@staticmethod
+	def get_commands():
+		commands = []
+		with open_log() as f:
+			commands = filter_commands(line for line in f)
+		return commands
+
 def open_log(): 
 	if os.name is 'nt':
 		gmic_log = "".join( (os.environ['HOME'], r'\AppData\Roaming\gmic\gmic_qt_log'))
@@ -35,6 +43,19 @@ def capture(subset = None):
 				command_file.write("*")
 			else:
 				command_file.write(subset)
+			command_file.write('\n')
+			
+def store_commands(commands, subset = None):
+	commands_path = "".join((os.getcwd(), r'\commands.txt'))
+	with open(commands_path, 'a') as command_file:
+		for pair in commands:
+			command_file.write(' '.join(pair))
+			if not subset:
+				command_file.write(' *')
+			else:
+				for group in subset:
+					command_file.write(' ')
+					command_file.write(group)
 			command_file.write('\n')
 			
 def add_subset(subset, file_names):
@@ -105,13 +126,18 @@ def command_init(command):
 	pass
 	
 def command_capture(command):
-	pass
+	num = command.n
+	groups = command.groups
+	coms = GmicLog.get_commands()
+	if num:
+		coms = coms[:num]
+	store_commands(coms, groups)
+	print(coms)
+	print(groups)
 	
 def command_inspect(command):
-	commands = []
-	with open_log() as f:
-		commands = filter_commands(line for line in f)
-	for i, c in enumerate(commands, 1):
+	coms = GmicLog.get_commands()
+	for i, c in enumerate(coms, 1):
 		print(str(i) + ": " + " ".join(c))
 
 	
