@@ -14,20 +14,40 @@ class GmicLog:
 		with open_log() as f:
 			commands = filter_commands(line for line in f)
 		return commands
+		
+	@staticmethod
+	def remove_commands(num_commands):
+		if num_commands <= 0:
+			raise ValueError
+		lines = []
+		with open_log() as f:
+			for l in f:
+				if num_commands > 0:
+					if is_command(l):
+						num_commands -= 1
+				else:
+					lines.append(l)
+		
+def log_location():
+	return "".join( (os.environ['HOME'], r'\AppData\Roaming\gmic\gmic_qt_log'))
 
 def open_log(): 
 	if os.name is 'nt':
-		gmic_log = "".join( (os.environ['HOME'], r'\AppData\Roaming\gmic\gmic_qt_log'))
+		gmic_log = log_location()
 	return open(gmic_log, 'r')
 
 def filter_commands(input):
 	commands = []
 	for line in input:
-		statements = str.split(line)
-		if len(statements)==6:
-			if statements[1] == 'Command:' and statements[4][-8:] != '_preview':
-				commands.append(statements[-2:])
+		if is_command(line):
+			commands.append(str.split(line)[-2:])
 	return commands
+	
+def is_command(line):
+	statements = str.split(line)
+	if len(statements)==6:
+		if statements[1] == 'Command:' and statements[4][-8:] != '_preview':
+			return True
 	
 def capture(subset = None):
 	commands = []
