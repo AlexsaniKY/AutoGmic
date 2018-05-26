@@ -20,17 +20,30 @@ class GmicLog:
 		if num_commands <= 0:
 			raise ValueError
 		#store remaining lines in lines[]
-		lines = []
+		stored_lines = []
+		removed_lines = []
 		with open_log('r+') as f:
 			for l in f:
 				if num_commands > 0:
+					removed_lines.append(l)
 					if is_command(l):
 						num_commands -= 1
 				else:
-					lines.append(l)
+					stored_lines.append(l)
 			f.seek(0)
-			f.write(' '.join(lines) + '\n')
+			f.write(''.join(stored_lines))
 			f.truncate()
+		return removed_lines
+		
+	@staticmethod
+	def clear_commands():
+		removed_lines = []
+		with open_log('r+') as f:
+			for l in f:
+				removed_lines.append(l)
+			f.seek(0)
+			f.truncate()
+		return removed_lines
 		
 def log_location():
 	if os.name is 'nt':
@@ -166,7 +179,17 @@ def command_inspect(command):
 
 	
 def command_flush(command):
-	pass
+	if (not command.num_actions) and (not command.a):
+		print("please specify either an amount or the all flag -a")
+		return
+	if command.num_actions and command.a:
+		print("Syntax Error: cannot specify both a value and -a")
+		return
+	if command.a:
+		GmicLog.clear_commands()
+	else:
+		GmicLog.remove_commands(command.num_actions)
+	
 	
 def command_apply(command):
 	pass
@@ -202,7 +225,7 @@ if __name__ == "__main__":
 	#flush unneeded commands
 	flush_parser   = command_parser.add_parser("flush", 
 						description = "flush a series of commands from the gmic logfile")
-	flush_parser.add_argument("num_actions", nargs = "?", default = 0, 
+	flush_parser.add_argument("num_actions", nargs = "?", default = 0, type = int, 
 						help = "amount of commands to remove from gmic logfile, starting with the oldest")
 	flush_parser.add_argument("-a" , action = "store_true", 
 						help = "flush all commands from logfile.  Cannot specify with a given amount simultaneously")
