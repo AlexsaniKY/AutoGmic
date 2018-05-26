@@ -29,12 +29,11 @@ class GmicLog:
 					lines.append(l)
 		
 def log_location():
-	return "".join( (os.environ['HOME'], r'\AppData\Roaming\gmic\gmic_qt_log'))
+	if os.name is 'nt':
+		return "".join( (os.environ['HOME'], r'\AppData\Roaming\gmic\gmic_qt_log'))
 
 def open_log(): 
-	if os.name is 'nt':
-		gmic_log = log_location()
-	return open(gmic_log, 'r')
+	return open(log_location(), 'r')
 
 def filter_commands(input):
 	commands = []
