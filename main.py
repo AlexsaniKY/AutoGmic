@@ -19,7 +19,6 @@ class GmicLog:
 	def remove_commands(num_commands):
 		if num_commands <= 0:
 			raise ValueError
-		#store remaining lines in lines[]
 		stored_lines = []
 		removed_lines = []
 		with open_log('r+') as f:
@@ -94,6 +93,30 @@ def store_commands(commands, subset = None):
 					command_file.write(group)
 			command_file.write('\n')
 			
+def set_subsets(subset_dict):
+	subsets_registry_path = "".join((os.getcwd(), r'\subset_registry'))
+	with open(subsets_registry_path, 'w') as reg_file:
+		for sub in subset_dict:
+			if sub is not '*':
+				reg_file.write(sub)
+				reg_file.write('\n')
+
+	for sub,files in subset_dict.items():
+		store_subset(sub, files)
+		
+def store_subset(subset, file_names):
+	if subset == '*':
+		subset = '_all'
+	#store subset filenames
+	dir = "".join((os.getcwd(), '\\subsets\\'))
+	if not os.path.exists(dir):
+		os.makedirs(dir)
+	new_subset_path = "".join((dir, subset))
+	with open(new_subset_path, 'w+') as subset_file:
+		for file in file_names:
+			subset_file.write(file)
+			subset_file.write("\n")
+			
 def add_subset(subset, file_names):
 	#register subset
 	subsets_registry_path = "".join((os.getcwd(), r'\subsets.txt'))
@@ -129,6 +152,8 @@ def walk_input_directory():
 				sets_dict[this_folder] = set()
 			
 			for f in files:
+				if f == 'Thumbs.db':
+					continue
 				#save each file by relative path to the parent folder
 				f_name = os.path.join(path, f)[len(parent_dir):]
 				#add for this folder's set
@@ -195,7 +220,8 @@ def command_apply(command):
 	pass
 	
 def command_walk(command):
-	walk_input_directory()
+	set_subsets(walk_input_directory())
+	
 
 if __name__ == "__main__":
 	#main parser and the parent to allow splitting on the first argument
