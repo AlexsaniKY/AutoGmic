@@ -19,21 +19,25 @@ class GmicLog:
 	def remove_commands(num_commands):
 		if num_commands <= 0:
 			raise ValueError
+		#store remaining lines in lines[]
 		lines = []
-		with open_log() as f:
+		with open_log('r+') as f:
 			for l in f:
 				if num_commands > 0:
 					if is_command(l):
 						num_commands -= 1
 				else:
 					lines.append(l)
+			f.seek(0)
+			f.write(' '.join(lines) + '\n')
+			f.truncate()
 		
 def log_location():
 	if os.name is 'nt':
 		return "".join( (os.environ['HOME'], r'\AppData\Roaming\gmic\gmic_qt_log'))
 
-def open_log(): 
-	return open(log_location(), 'r')
+def open_log(mode = 'r'): 
+	return open(log_location(), mode)
 
 def filter_commands(input):
 	commands = []
@@ -151,6 +155,7 @@ def command_capture(command):
 	if num:
 		coms = coms[:num]
 	store_commands(coms, groups)
+	GmicLog.remove_commands(num)
 	print(coms)
 	print(groups)
 	
