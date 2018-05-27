@@ -181,108 +181,114 @@ def walk_input_directory():
 
 	return sets_dict
 	
-def command_init(command):
-	pass
-	
-def command_capture(command):
-	num = command.n
-	groups = command.groups
-	coms = GmicLog.get_commands()
-	if num:
-		coms = coms[:num]
-	store_commands(coms, groups)
-	if num:
-		GmicLog.remove_commands(num)
-	else:
-		GmicLog.clear_commands()
-	print(coms)
-	print(groups)
-	
-def command_inspect(command):
-	coms = GmicLog.get_commands()
-	for i, c in enumerate(coms, 1):
-		print(str(i) + ": " + " ".join(c))
-
-	
-def command_flush(command):
-	if (not command.num_actions) and (not command.a):
-		print("please specify either an amount or the all flag -a")
-		return
-	if command.num_actions and command.a:
-		print("Syntax Error: cannot specify both a value and -a")
-		return
-	if command.a:
-		GmicLog.clear_commands()
-	else:
-		GmicLog.remove_commands(command.num_actions)
-	
-	
-def command_apply(command):
-	#############################
-	#TODO read subsets from files
-	subset_dict = walk_input_directory()
-	
-	imageset = set()
-	if command.groups:
-		for g in command.groups:
-			if g in subset_dict:
-				imageset.update(subset_dict[g])
-			else:
-				print("Error: specified group not found: " + g)
-				return
-	else:
-		imageset = subset_dict["*"]
-	images = sorted(imageset)
-	comms = []
-	args = []
-	groups = []
-	
-	cwd = os.getcwd()
-	input_folder = "".join((cwd, '\\input'))
-	output_folder = "".join((cwd, '\\output'))
-	commands_path = "".join((cwd, '\\commands.txt'))
-	with open(commands_path, 'r') as command_file:
-		for line in command_file:
-			if line.rstrip() == "":
-				continue
-			l = line.split(' ')
-			c, a, *g = l
-			#strip whitespace (newlines)
-			g[-1] = g[-1].rstrip()
-			comms.append(c)
-			args.append(a)
-			groups.append(g)
-
-	statements = []
-	for i in images:
-		s = ["gmic", "-i", "".join((input_folder, i))]
-		for index in range(len(comms)):
-			for g in groups[index]:
-				if g not in subset_dict:
-					print("Group: " + g + " not recognized")
-				else:
-					if i in subset_dict[g]:
-						s.append(comms[index])
-						s.append(args[index])
-		s.append("-o")
-		s.append("".join((output_folder, i)))
-		statements.append(s)
+class Command:
+	@staticmethod
+	def init(command):
+		pass
 		
-	for path, _, _ in os.walk(input_folder):
-		in_f = path.split(input_folder)[-1]
-		out_f = "".join((output_folder, in_f))
-		if not os.path.exists(out_f):
-			os.makedirs(out_f)
-
-	for index, s in enumerate(statements):
-		if index == command.n:
+	@staticmethod
+	def capture(command):
+		num = command.n
+		groups = command.groups
+		coms = GmicLog.get_commands()
+		if num:
+			coms = coms[:num]
+		store_commands(coms, groups)
+		if num:
+			GmicLog.remove_commands(num)
+		else:
+			GmicLog.clear_commands()
+		print(coms)
+		print(groups)
+		
+	@staticmethod
+	def inspect(command):
+		coms = GmicLog.get_commands()
+		if not coms:
+			print("No commands to inspect.")
 			return
-		subprocess.call(s, shell = True)
+		for i, c in enumerate(coms, 1):
+			print(str(i) + ": " + " ".join(c))
 
-	
-	
-def command_walk(command):
-	set_subsets(walk_input_directory())
+	@staticmethod
+	def flush(command):
+		if (not command.num_actions) and (not command.a):
+			print("please specify either an amount or the all flag -a")
+			return
+		if command.num_actions and command.a:
+			print("Syntax Error: cannot specify both a value and -a")
+			return
+		if command.a:
+			GmicLog.clear_commands()
+		else:
+			GmicLog.remove_commands(command.num_actions)
+		
+	@staticmethod
+	def apply(command):
+		#############################
+		#TODO read subsets from files
+		subset_dict = walk_input_directory()
+		
+		imageset = set()
+		if command.groups:
+			for g in command.groups:
+				if g in subset_dict:
+					imageset.update(subset_dict[g])
+				else:
+					print("Error: specified group not found: " + g)
+					return
+		else:
+			imageset = subset_dict["*"]
+		images = sorted(imageset)
+		comms = []
+		args = []
+		groups = []
+		
+		cwd = os.getcwd()
+		input_folder = "".join((cwd, '\\input'))
+		output_folder = "".join((cwd, '\\output'))
+		commands_path = "".join((cwd, '\\commands.txt'))
+		with open(commands_path, 'r') as command_file:
+			for line in command_file:
+				if line.rstrip() == "":
+					continue
+				l = line.split(' ')
+				c, a, *g = l
+				#strip whitespace (newlines)
+				g[-1] = g[-1].rstrip()
+				comms.append(c)
+				args.append(a)
+				groups.append(g)
+
+		statements = []
+		for i in images:
+			s = ["gmic", "-i", "".join((input_folder, i))]
+			for index in range(len(comms)):
+				for g in groups[index]:
+					if g not in subset_dict:
+						print("Group: " + g + " not recognized")
+					else:
+						if i in subset_dict[g]:
+							s.append(comms[index])
+							s.append(args[index])
+			s.append("-o")
+			s.append("".join((output_folder, i)))
+			statements.append(s)
+			
+		for path, _, _ in os.walk(input_folder):
+			in_f = path.split(input_folder)[-1]
+			out_f = "".join((output_folder, in_f))
+			if not os.path.exists(out_f):
+				os.makedirs(out_f)
+
+		for index, s in enumerate(statements):
+			if index == command.n:
+				return
+			subprocess.call(s, shell = True)
+
+	@staticmethod
+	def walk(command):
+		set_subsets(walk_input_directory())
 	
 
 if __name__ == "__main__":
@@ -294,7 +300,7 @@ if __name__ == "__main__":
 	#initialize directory
 	init_parser    = command_parser.add_parser("init", 
 						description = "initialize directory for tracking, capturing, and processing operations on a set of images")
-	commands["init"] = command_init
+	commands["init"] = Command.init
 	
 	#capture commands
 	capture_parser = command_parser.add_parser("capture", 
@@ -303,12 +309,12 @@ if __name__ == "__main__":
 						help = "the amount of commands to capture. Omit to capture all commands.  Must be entered first to allow maximum flexibility in allowed folder/group names")
 	capture_parser.add_argument("groups", nargs = argparse.REMAINDER, 
 						help = "list of all groups this is applied to.  Omit to affect all images.")
-	commands["capture"] = command_capture
+	commands["capture"] = Command.capture
 	
 	#inspect uncaptured commands
 	inspect_parser = command_parser.add_parser("inspect", 
 						description = "inspect a series of actions not captured yet from the gmic logfile")
-	commands["inspect"] = command_inspect
+	commands["inspect"] = Command.inspect
 	
 	#flush unneeded commands
 	flush_parser   = command_parser.add_parser("flush", 
@@ -317,7 +323,7 @@ if __name__ == "__main__":
 						help = "amount of commands to remove from gmic logfile, starting with the oldest")
 	flush_parser.add_argument("-a" , action = "store_true", 
 						help = "flush all commands from logfile.  Cannot specify with a given amount simultaneously")
-	commands["flush"] = command_flush
+	commands["flush"] = Command.flush
 	
 	#apply commands to image(s)
 	apply_parser   = command_parser.add_parser("apply", description = "apply set of commands to one or more images")
@@ -325,11 +331,11 @@ if __name__ == "__main__":
 						help = "number of images to apply, in order alphabetically, including the path to file")
 	apply_parser.add_argument("groups", nargs = argparse.REMAINDER, 
 						help = "groups to apply command chain to")
-	commands["apply"] = command_apply
+	commands["apply"] = Command.apply
 	
 	#walk input directory
 	walk_parser    = command_parser.add_parser("walk", description = "walk the input directory and set the group names from it")
-	commands["walk"] = command_walk
+	commands["walk"] = Command.walk
 	
 	input = cli_parser.parse_args()
 	print(input)
