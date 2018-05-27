@@ -67,19 +67,6 @@ class GmicLog:
 			if statements[1] == 'Command:' and statements[4][-8:] != '_preview':
 				return True
 	
-def capture(subset = None):
-	commands = GmicLog.get_commands()
-	
-	commands_path = "".join((os.getcwd(), r'\commands.txt'))
-	with open(commands_path, 'a') as command_file:
-		for pair in commands:
-			command_file.write(' '.join(pair))
-			command_file.write(' ')
-			if subset is None:
-				command_file.write("*")
-			else:
-				command_file.write(subset)
-			command_file.write('\n')
 			
 def store_commands(commands, subset = None):
 
