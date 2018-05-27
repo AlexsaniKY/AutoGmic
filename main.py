@@ -267,9 +267,15 @@ def command_apply(command):
 		s.append("-o")
 		s.append("".join((output_folder, i)))
 		statements.append(s)
+		
+	for path, _, _ in os.walk(input_folder):
+		in_f = path.split(input_folder)[-1]
+		out_f = "".join((output_folder, in_f))
+		if not os.path.exists(out_f):
+			os.makedirs(out_f)
 	for s in statements:
-		print(s)
 		subprocess.call(s, shell = True)
+
 	
 	
 def command_walk(command):
