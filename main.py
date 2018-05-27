@@ -217,7 +217,43 @@ def command_flush(command):
 	
 	
 def command_apply(command):
-	pass
+	#############################
+	#TODO read subsets from files
+	subset_dict = walk_input_directory()
+	
+	images = subset_dict["*"]
+	comms = []
+	args = []
+	groups = []
+	
+	cwd = os.getcwd()
+	input_folder = "".join((cwd, '\\input\\'))
+	output_folder = "".join((cwd, '\\output\\'))
+	commands_path = "".join((cwd, r'\commands.txt'))
+	print(commands_path)
+	with open(commands_path, 'a') as command_file:
+		for line in command_file:
+			l = line.split(' ')
+			c, a, *g = l
+			
+			comms.extend(c)
+			args.extend(a)
+			groups.extend(g)
+			
+	for i in images:
+		statements = ["gmic", "-i", i]
+		for c, a, *g in zip(comms, args, groups):
+			for group in g:
+				if i in subset_dict[group]:
+					statements.append(c)
+					statements.append(a)
+		statements.append("-o")
+		statements.append("".join((output_folder, i)))
+		print(statements)
+		#subprocess.call(statements)
+		
+	#with open(commands_path, 'a') as command_file:
+	
 	
 def command_walk(command):
 	set_subsets(walk_input_directory())
@@ -259,7 +295,7 @@ if __name__ == "__main__":
 	
 	#apply commands to image(s)
 	apply_parser   = command_parser.add_parser("apply", description = "apply set of commands to one or more images")
-	commands["apply"] = None
+	commands["apply"] = command_apply
 	
 	#walk input directory
 	walk_parser    = command_parser.add_parser("walk", description = "walk the input directory and set the group names from it")
