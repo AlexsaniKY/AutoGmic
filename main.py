@@ -120,20 +120,6 @@ def store_subset(subset, file_names):
 			subset_file.write(file)
 			subset_file.write("\n")
 			
-def add_subset(subset, file_names):
-	#register subset
-	subsets_registry_path = "".join((os.getcwd(), r'\subsets.txt'))
-	with open(subsets_registry_path, 'a') as reg_file:
-		reg_file.write(subset)
-		reg_file.write('\n')
-	
-	#store subset filenames
-	new_subset_path = "".join((os.getcwd(), r'\subsets\\', subset))
-	with open(new_subset_path, 'a') as subset_file:
-		for file in file_names:
-			subset_file.write(file)
-			subset_file.write("\n")
-			
 def walk_input_directory():
 	#directories = {}
 	sets_dict = {"*": set()}
