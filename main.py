@@ -81,6 +81,9 @@ def capture(subset = None):
 			command_file.write('\n')
 			
 def store_commands(commands, subset = None):
+
+	####
+	#BUG: save groups with quotations
 	commands_path = "".join((os.getcwd(), r'\commands.txt'))
 	with open(commands_path, 'a') as command_file:
 		for pair in commands:
@@ -227,30 +230,41 @@ def command_apply(command):
 	groups = []
 	
 	cwd = os.getcwd()
-	input_folder = "".join((cwd, '\\input\\'))
-	output_folder = "".join((cwd, '\\output\\'))
+	input_folder = "".join((cwd, '\\input'))
+	output_folder = "".join((cwd, '\\output'))
 	commands_path = "".join((cwd, r'\commands.txt'))
-	print(commands_path)
-	with open(commands_path, 'a') as command_file:
+	with open(commands_path, 'r') as command_file:
 		for line in command_file:
+			if line.rstrip() == "":
+				continue
 			l = line.split(' ')
 			c, a, *g = l
+			#strip whitespace (newlines)
+			g[-1] = g[-1].rstrip()
+			comms.append(c)
+			args.append(a)
+			groups.append(g)
 			
-			comms.extend(c)
-			args.extend(a)
-			groups.extend(g)
-			
+	#print(comms)
+	#print(args)
+	#print(groups)
+	statements = []
 	for i in images:
-		statements = ["gmic", "-i", i]
-		for c, a, *g in zip(comms, args, groups):
-			for group in g:
-				if i in subset_dict[group]:
-					statements.append(c)
-					statements.append(a)
-		statements.append("-o")
-		statements.append("".join((output_folder, i)))
-		print(statements)
-		#subprocess.call(statements)
+		s = ["gmic", "-i", "".join(('"', input_folder, i, '"'))]
+		for index in range(len(comms)):
+			for g in groups[index]:
+				if g not in subset_dict:
+					print("Group: " + g + " not recognized")
+				else:
+					if i in subset_dict[g]:
+						s.append(comms[index])
+						s.append(args[index])
+		s.append("-o")
+		s.append("".join(('"', output_folder, i, '"')))
+		statements.append(s)
+		#print(" ".join(s))
+		#print()
+	subprocess.call(statements[-1])
 		
 	#with open(commands_path, 'a') as command_file:
 	
