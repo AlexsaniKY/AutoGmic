@@ -273,7 +273,10 @@ def command_apply(command):
 		out_f = "".join((output_folder, in_f))
 		if not os.path.exists(out_f):
 			os.makedirs(out_f)
-	for s in statements:
+
+	for index, s in enumerate(statements):
+		if index == command.n:
+			return
 		subprocess.call(s, shell = True)
 
 	
@@ -318,7 +321,10 @@ if __name__ == "__main__":
 	
 	#apply commands to image(s)
 	apply_parser   = command_parser.add_parser("apply", description = "apply set of commands to one or more images")
-	apply_parser.add_argument("groups", nargs = argparse.REMAINDER, help = "groups to apply command chain to")
+	apply_parser.add_argument("-n", "-num_images", type=int, 
+						help = "number of images to apply, in order alphabetically, including the path to file")
+	apply_parser.add_argument("groups", nargs = argparse.REMAINDER, 
+						help = "groups to apply command chain to")
 	commands["apply"] = command_apply
 	
 	#walk input directory
