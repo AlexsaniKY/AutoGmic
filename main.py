@@ -222,7 +222,17 @@ def command_apply(command):
 	#TODO read subsets from files
 	subset_dict = walk_input_directory()
 	
-	images = subset_dict["*"]
+	imageset = set()
+	if command.groups:
+		for g in command.groups:
+			if g in subset_dict:
+				imageset.update(subset_dict[g])
+			else:
+				print("Error: specified group not found: " + g)
+				return
+	else:
+		imageset = subset_dict["*"]
+	images = sorted(imageset)
 	comms = []
 	args = []
 	groups = []
@@ -257,8 +267,9 @@ def command_apply(command):
 		s.append("-o")
 		s.append("".join((output_folder, i)))
 		statements.append(s)
-	print(statements[-1])
-	subprocess.call(statements[-1], shell = True)
+	for s in statements:
+		print(s)
+		subprocess.call(s, shell = True)
 	
 	
 def command_walk(command):
@@ -301,6 +312,7 @@ if __name__ == "__main__":
 	
 	#apply commands to image(s)
 	apply_parser   = command_parser.add_parser("apply", description = "apply set of commands to one or more images")
+	apply_parser.add_argument("groups", nargs = argparse.REMAINDER, help = "groups to apply command chain to")
 	commands["apply"] = command_apply
 	
 	#walk input directory
