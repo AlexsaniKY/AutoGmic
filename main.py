@@ -245,7 +245,7 @@ def command_apply(command):
 
 	statements = []
 	for i in images:
-		s = ["gmic", "-i", "".join(('"', input_folder, i, '"'))]
+		s = ["gmic", "-i", "".join((input_folder, i))]
 		for index in range(len(comms)):
 			for g in groups[index]:
 				if g not in subset_dict:
@@ -255,9 +255,10 @@ def command_apply(command):
 						s.append(comms[index])
 						s.append(args[index])
 		s.append("-o")
-		s.append("".join(('"', output_folder, i, '"')))
+		s.append("".join((output_folder, i)))
 		statements.append(s)
-	subprocess.call(statements[-1])
+	print(statements[-1])
+	subprocess.call(statements[-1], shell = True)
 	
 	
 def command_walk(command):
