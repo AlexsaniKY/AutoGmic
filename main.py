@@ -179,11 +179,6 @@ def walk_input_directory():
 		if not sets_dict[this_folder]:
 			del sets_dict[this_folder]
 
-	# for k, v in sets_dict.items():
-		# print(k + ": ")
-		# s = sorted(v)
-		# for i in s:
-			# print("\t" + i)
 	return sets_dict
 	
 def command_init(command):
@@ -196,7 +191,10 @@ def command_capture(command):
 	if num:
 		coms = coms[:num]
 	store_commands(coms, groups)
-	GmicLog.remove_commands(num)
+	if num:
+		GmicLog.remove_commands(num)
+	else:
+		GmicLog.clear_commands()
 	print(coms)
 	print(groups)
 	
@@ -232,7 +230,7 @@ def command_apply(command):
 	cwd = os.getcwd()
 	input_folder = "".join((cwd, '\\input'))
 	output_folder = "".join((cwd, '\\output'))
-	commands_path = "".join((cwd, r'\commands.txt'))
+	commands_path = "".join((cwd, '\\commands.txt'))
 	with open(commands_path, 'r') as command_file:
 		for line in command_file:
 			if line.rstrip() == "":
@@ -244,10 +242,7 @@ def command_apply(command):
 			comms.append(c)
 			args.append(a)
 			groups.append(g)
-			
-	#print(comms)
-	#print(args)
-	#print(groups)
+
 	statements = []
 	for i in images:
 		s = ["gmic", "-i", "".join(('"', input_folder, i, '"'))]
@@ -262,11 +257,7 @@ def command_apply(command):
 		s.append("-o")
 		s.append("".join(('"', output_folder, i, '"')))
 		statements.append(s)
-		#print(" ".join(s))
-		#print()
 	subprocess.call(statements[-1])
-		
-	#with open(commands_path, 'a') as command_file:
 	
 	
 def command_walk(command):
