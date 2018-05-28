@@ -4,6 +4,7 @@ import sys
 import os
 from pathlib import Path
 from glob import glob
+from collections import deque
 
 #print(__file__)     #this file's directory
 #print(os.getcwd())  #the directory this file was called from
@@ -221,21 +222,38 @@ class Command:
 		else:
 			imageset = subset_dict["*"]
 			
-		if command.f and not command.n:
+		if command.f:
+			file = ""
 			if not os.path.isfile(input_folder + command.f):
 				f_candidates = glob("".join((input_folder, "\\**\\", command.f)), recursive= True)
 				print(f_candidates)
 				if f_candidates:
-					imageset = set((f_candidates[0][len(input_folder):],))
+					file = f_candidates[0][len(input_folder):]
 					if len(f_candidates)>1:
 						print("selected " + f_candidates[0][len(input_folder):])
 				else:
 					print("could not find file specified")
 					return
 			else:
-				imageset = set((command.f,))
-		print("imageset: " + imageset.__repr__())
-		images = sorted(imageset)
+				file = command.f
+				
+		if file: 
+			if not command.n:
+				#if file is specified but not n, only process one file
+				images = [file]
+			else:
+				#file and n are both specified, start at file through n images
+				images = sorted(imageset)
+				if file in images:
+					index = images.index(file)
+					images = deque(images)
+					images.rotate(-index)
+				else:
+					print("could not find file specified")
+					return
+		else:
+			images = sorted(imageset)
+		
 		comms = []
 		args = []
 		groups = []
@@ -321,7 +339,10 @@ if __name__ == "__main__":
 	apply_parser   = command_parser.add_parser("apply", description = "apply set of commands to one or more images")
 	apply_parser.add_argument("-f", "-filename",
 						help = "specifies file name, if -n is applied, this is the file to start from")
+						
 	## should these be an exlusive group? ##
+	## should the user choose if specifying an image that has to be searched for? ##
+	
 	apply_parser.add_argument("-n", "-num_images", type=int, 
 						help = "number of images to apply, in order alphabetically, including the path to file")
 	apply_parser.add_argument("-a", "-all", action = "store_true", 
