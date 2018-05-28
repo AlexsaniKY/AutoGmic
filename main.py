@@ -203,6 +203,10 @@ class Command:
 		
 	@staticmethod
 	def apply(command):
+		if not (command.f or command.a or command.n):
+			print("must specify filename, n quantity or all flag")
+			return
+	
 		#############################
 		#TODO read subsets from files
 		subset_dict = walk_input_directory()
