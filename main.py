@@ -67,6 +67,8 @@ class GmicLog:
 			if statements[1] == 'Command:' and statements[4][-8:] != '_preview':
 				return True
 	
+class LocalDir:
+	pass
 			
 def store_commands(commands, subset = None):
 
