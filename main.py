@@ -254,7 +254,7 @@ class Command:
 					images.rotate(-index)
 				else:
 					print("could not find file specified")
-					return
+					return	
 		else:
 			images = sorted(imageset)
 		
