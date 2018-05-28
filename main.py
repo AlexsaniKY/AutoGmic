@@ -226,6 +226,9 @@ class Command:
 		else:
 			imageset = subset_dict["*"]
 			
+		##TODO##
+		#restructure this logic
+		########
 		if command.f:
 			file = ""
 			if not os.path.isfile(input_folder + command.f):
