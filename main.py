@@ -3,6 +3,7 @@ import argparse
 import sys
 import os
 from pathlib import Path
+from glob import glob
 
 #print(__file__)     #this file's directory
 #print(os.getcwd())  #the directory this file was called from
@@ -204,6 +205,10 @@ class Command:
 		#############################
 		#TODO read subsets from files
 		subset_dict = walk_input_directory()
+		cwd = os.getcwd()
+		input_folder = "".join((cwd, '\\input'))
+		output_folder = "".join((cwd, '\\output'))
+		commands_path = "".join((cwd, '\\commands.txt'))
 		
 		imageset = set()
 		if command.groups:
@@ -215,15 +220,26 @@ class Command:
 					return
 		else:
 			imageset = subset_dict["*"]
+			
+		if command.f and not command.n:
+			if not os.path.isfile(input_folder + command.f):
+				f_candidates = glob("".join((input_folder, "\\**\\", command.f)), recursive= True)
+				print(f_candidates)
+				if f_candidates:
+					imageset = set((f_candidates[0][len(input_folder):],))
+					if len(f_candidates)>1:
+						print("selected " + f_candidates[0][len(input_folder):])
+				else:
+					print("could not find file specified")
+					return
+			else:
+				imageset = set((command.f,))
+		print("imageset: " + imageset.__repr__())
 		images = sorted(imageset)
 		comms = []
 		args = []
 		groups = []
 		
-		cwd = os.getcwd()
-		input_folder = "".join((cwd, '\\input'))
-		output_folder = "".join((cwd, '\\output'))
-		commands_path = "".join((cwd, '\\commands.txt'))
 		with open(commands_path, 'r') as command_file:
 			for line in command_file:
 				if line.rstrip() == "":
@@ -303,8 +319,13 @@ if __name__ == "__main__":
 	
 	#apply commands to image(s)
 	apply_parser   = command_parser.add_parser("apply", description = "apply set of commands to one or more images")
+	apply_parser.add_argument("-f", "-filename",
+						help = "specifies file name, if -n is applied, this is the file to start from")
+	## should these be an exlusive group? ##
 	apply_parser.add_argument("-n", "-num_images", type=int, 
 						help = "number of images to apply, in order alphabetically, including the path to file")
+	apply_parser.add_argument("-a", "-all", action = "store_true", 
+						help = "applies to all images in directory")
 	apply_parser.add_argument("groups", nargs = argparse.REMAINDER, 
 						help = "groups to apply command chain to")
 	commands["apply"] = Command.apply
