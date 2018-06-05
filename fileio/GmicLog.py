@@ -1,6 +1,7 @@
+import os
 
 def get_commands():
-	with open() as f:
+	with openlog() as f:
 		commands = filter_commands(line for line in f)
 		return commands
 	
@@ -10,7 +11,7 @@ def remove_commands(num_commands):
 		raise ValueError
 	stored_lines = []
 	removed_lines = []
-	with open('r+') as f:
+	with openlog('r+') as f:
 		for l in f:
 			if num_commands > 0:
 				removed_lines.append(l)
@@ -26,7 +27,7 @@ def remove_commands(num_commands):
 
 def clear_commands():
 	removed_lines = []
-	with open('r+') as f:
+	with openlog('r+') as f:
 		for l in f:
 			removed_lines.append(l)
 		f.seek(0)
@@ -39,7 +40,7 @@ def location():
 		return "".join( (os.environ['HOME'], r'\AppData\Roaming\gmic\gmic_qt_log'))
 
 
-def open(mode = 'r'): 
+def openlog(mode = 'r'): 
 	return open(location(), mode)
 
 
