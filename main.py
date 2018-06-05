@@ -10,10 +10,7 @@ from fileio import GmicLog
 #print(__file__)     #this file's directory
 #print(os.getcwd())  #the directory this file was called from
 
-	
-class LocalDir:
-	pass
-			
+		
 def store_commands(commands, subset = None):
 
 	####

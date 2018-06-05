@@ -1,5 +1,10 @@
 import os
 
+log_location = None
+
+if os.name is 'nt':
+	log_location = "".join( (os.environ['HOME'], r'\AppData\Roaming\gmic\gmic_qt_log'))
+
 def get_commands():
 	with openlog() as f:
 		commands = filter_commands(line for line in f)
@@ -35,13 +40,8 @@ def clear_commands():
 	return removed_lines
 
 
-def location():
-	if os.name is 'nt':
-		return "".join( (os.environ['HOME'], r'\AppData\Roaming\gmic\gmic_qt_log'))
-
-
 def openlog(mode = 'r'): 
-	return open(location(), mode)
+	return open(log_location, mode)
 
 
 def filter_commands(input):
