@@ -1,7 +1,7 @@
 
 def get_commands():
-	with GmicLog.open() as f:
-		commands = GmicLog.filter_commands(line for line in f)
+	with open() as f:
+		commands = filter_commands(line for line in f)
 		return commands
 	
 
@@ -10,11 +10,11 @@ def remove_commands(num_commands):
 		raise ValueError
 	stored_lines = []
 	removed_lines = []
-	with GmicLog.open('r+') as f:
+	with open('r+') as f:
 		for l in f:
 			if num_commands > 0:
 				removed_lines.append(l)
-				if GmicLog.is_command(l):
+				if is_command(l):
 					num_commands -= 1
 			else:
 				stored_lines.append(l)
@@ -26,7 +26,7 @@ def remove_commands(num_commands):
 
 def clear_commands():
 	removed_lines = []
-	with GmicLog.open('r+') as f:
+	with open('r+') as f:
 		for l in f:
 			removed_lines.append(l)
 		f.seek(0)
@@ -40,13 +40,13 @@ def location():
 
 
 def open(mode = 'r'): 
-	return open(GmicLog.location(), mode)
+	return open(location(), mode)
 
 
 def filter_commands(input):
 	commands = []
 	for line in input:
-		if GmicLog.is_command(line):
+		if is_command(line):
 			commands.append(str.split(line)[-2:])
 	return commands
 
