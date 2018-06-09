@@ -240,7 +240,7 @@ class Command:
 		set_subsets(walk_input_directory())
 	
 
-def main():
+def main(args = None):
 	#main parser and the parent to allow splitting on the first argument
 	cli_parser = argparse.ArgumentParser(description="Allows automatic captured processing of multiple organized images through Gmic's command line interface")
 	command_parser = cli_parser.add_subparsers(dest="command")
@@ -294,7 +294,10 @@ def main():
 	walk_parser    = command_parser.add_parser("walk", description = "walk the input directory and set the group names from it")
 	commands["walk"] = Command.walk
 	
-	input = cli_parser.parse_args()
+	if args:
+		input = cli_parser.parse_args(args)
+	else:
+		input = cli_parser.parse_args()
 	print(input)
 	
 	commands[input.command](input)

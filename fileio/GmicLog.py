@@ -1,9 +1,10 @@
 import os
 
 log_location = None
+HOME = os.path.expanduser('~')
 
 if os.name is 'nt':
-	log_location = "".join( (os.environ['HOME'], r'\AppData\Roaming\gmic\gmic_qt_log'))
+	log_location = "".join( (HOME, r'\AppData\Roaming\gmic\gmic_qt_log') )
 
 def get_commands():
 	with openlog() as f:
