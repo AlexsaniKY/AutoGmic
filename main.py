@@ -6,26 +6,11 @@ from pathlib import Path
 from glob import glob
 from collections import deque
 from fileio import GmicLog
+from fileio import CommandLog
 
 #print(__file__)     #this file's directory
 #print(os.getcwd())  #the directory this file was called from
 
-		
-def store_commands(commands, subset = None):
-
-	####
-	#BUG: save groups with quotations
-	commands_path = "".join((os.getcwd(), r'\commands.txt'))
-	with open(commands_path, 'a') as command_file:
-		for pair in commands:
-			command_file.write(' '.join(pair))
-			if not subset:
-				command_file.write(' *')
-			else:
-				for group in subset:
-					command_file.write(' ')
-					command_file.write(group)
-			command_file.write('\n')
 			
 def set_subsets(subset_dict):
 	subsets_registry_path = "".join((os.getcwd(), r'\subset_registry'))
@@ -110,7 +95,7 @@ class Command:
 		coms = GmicLog.get_commands()
 		if num:
 			coms = coms[:num]
-		store_commands(coms, groups)
+		CommandLog.store(coms, groups)
 		if num:
 			GmicLog.remove_commands(num)
 		else:
@@ -142,6 +127,14 @@ class Command:
 		
 	@staticmethod
 	def apply(command):
+	
+		# build imageset based on groups supplied
+		# position start based on supplied filename
+		# truncate if rolling not allowed, rotate if rolling
+		# truncate if maximum number is supplied
+		#
+		# get commands, groups from command file
+		# 
 		if not (command.f or command.a or command.n):
 			print("must specify filename, n quantity or all flag")
 			return
