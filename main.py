@@ -240,7 +240,7 @@ class Command:
 		set_subsets(walk_input_directory())
 	
 
-if __name__ == "__main__":
+def main():
 	#main parser and the parent to allow splitting on the first argument
 	cli_parser = argparse.ArgumentParser(description="Allows automatic captured processing of multiple organized images through Gmic's command line interface")
 	command_parser = cli_parser.add_subparsers(dest="command")
@@ -298,6 +298,9 @@ if __name__ == "__main__":
 	print(input)
 	
 	commands[input.command](input)
+	
+if __name__ == "__main__":
+	main()
 
 
 		
