@@ -7,238 +7,11 @@ from glob import glob
 from collections import deque
 from fileio import GmicLog
 from fileio import CommandLog
+from fileio import Input
+import CLI
 
 #print(__file__)     #this file's directory
 #print(os.getcwd())  #the directory this file was called from
-
-			
-def set_subsets(subset_dict):
-	subsets_registry_path = "".join((os.getcwd(), r'\subset_registry'))
-	with open(subsets_registry_path, 'w') as reg_file:
-		for sub in subset_dict:
-			if sub is not '*':
-				reg_file.write(sub)
-				reg_file.write('\n')
-
-	for sub,files in subset_dict.items():
-		store_subset(sub, files)
-		
-def store_subset(subset, file_names):
-	if subset == '*':
-		subset = '_all'
-	#store subset filenames
-	dir = "".join((os.getcwd(), '\\subsets\\'))
-	if not os.path.exists(dir):
-		os.makedirs(dir)
-	new_subset_path = "".join((dir, subset))
-	with open(new_subset_path, 'w+') as subset_file:
-		for file in file_names:
-			subset_file.write(file)
-			subset_file.write("\n")
-			
-def walk_input_directory():
-	#directories = {}
-	sets_dict = {"*": set()}
-	#each folder is a key in sets, and its subdirectories are saved in directories
-	parent_dir = "".join((os.getcwd(), r'\input'))
-	print(parent_dir)
-	for path, names, files in os.walk("".join((os.getcwd(), r'\input')), topdown = False):
-		#set the folder name to the lowest folder we are searching
-		this_folder = os.path.split(path)[-1]
-		
-		#don't store the parent input folder as a named set
-		if path == parent_dir:
-			this_folder = "*"
-			
-		#if there are files in the folder, store them in the set
-		if files:		
-			#initialize
-			if this_folder not in sets_dict:
-				sets_dict[this_folder] = set()
-			
-			for f in files:
-				if f == 'Thumbs.db':
-					continue
-				#save each file by relative path to the parent folder
-				f_name = os.path.join(path, f)[len(parent_dir):]
-				#add for this folder's set
-				sets_dict[this_folder].add(f_name)
-				#add to universal set, may be redundant 
-				#but won't be costly enough to need to separate the logic
-				sets_dict["*"].add(f_name)
-				
-		#if there are subdirectories, merge their sets into this one
-		if names:
-			# make sure we have a set to store into
-			if this_folder not in sets_dict:
-				sets_dict[this_folder] = set()
-			#store the subdirectory sets in this set, ignoring empty subdirectories
-			for directory in names:
-				if directory in sets_dict:
-					sets_dict[this_folder].update(sets_dict[directory])
-		#if this and all lower subdirectories were empty,
-		#don't save the folder's contents
-		if not sets_dict[this_folder]:
-			del sets_dict[this_folder]
-
-	return sets_dict
-	
-class Command:
-	@staticmethod
-	def init(command):
-		pass
-		
-	@staticmethod
-	def capture(command):
-		num = command.n
-		groups = command.groups
-		coms = GmicLog.get_commands()
-		if num:
-			coms = coms[:num]
-		CommandLog.store(coms, groups)
-		if num:
-			GmicLog.remove_commands(num)
-		else:
-			GmicLog.clear_commands()
-		print(coms)
-		print(groups)
-		
-	@staticmethod
-	def inspect(command):
-		coms = GmicLog.get_commands()
-		if not coms:
-			print("No commands to inspect.")
-			return
-		for i, c in enumerate(coms, 1):
-			print(str(i) + ": " + " ".join(c))
-
-	@staticmethod
-	def flush(command):
-		if (not command.num_actions) and (not command.a):
-			print("please specify either an amount or the all flag -a")
-			return
-		if command.num_actions and command.a:
-			print("Syntax Error: cannot specify both a value and -a")
-			return
-		if command.a:
-			GmicLog.clear_commands()
-		else:
-			GmicLog.remove_commands(command.num_actions)
-		
-	@staticmethod
-	def apply(command):
-	
-		# build imageset based on groups supplied
-		# position start based on supplied filename
-		# truncate if rolling not allowed, rotate if rolling
-		# truncate if maximum number is supplied
-		#
-		# get commands, groups from command file
-		# 
-		if not (command.f or command.a or command.n):
-			print("must specify filename, n quantity or all flag")
-			return
-	
-		#############################
-		#TODO read subsets from files
-		subset_dict = walk_input_directory()
-		cwd = os.getcwd()
-		input_folder = "".join((cwd, '\\input'))
-		output_folder = "".join((cwd, '\\output'))
-		commands_path = "".join((cwd, '\\commands.txt'))
-		
-		imageset = set()
-		if command.groups:
-			for g in command.groups:
-				if g in subset_dict:
-					imageset.update(subset_dict[g])
-				else:
-					print("Error: specified group not found: " + g)
-					return
-		else:
-			imageset = subset_dict["*"]
-			
-		##TODO##
-		#restructure this logic
-		########
-		if command.f:
-			file = ""
-			if not os.path.isfile(input_folder + command.f):
-				f_candidates = glob("".join((input_folder, "\\**\\", command.f)), recursive= True)
-				print(f_candidates)
-				if f_candidates:
-					file = f_candidates[0][len(input_folder):]
-					if len(f_candidates)>1:
-						print("selected " + f_candidates[0][len(input_folder):])
-				else:
-					print("could not find file specified")
-					return
-			else:
-				file = command.f
-				
-		if file: 
-			if not command.n:
-				#if file is specified but not n, only process one file
-				images = [file]
-			else:
-				#file and n are both specified, start at file through n images
-				images = sorted(imageset)
-				if file in images:
-					index = images.index(file)
-					images = deque(images)
-					images.rotate(-index)
-				else:
-					print("could not find file specified")
-					return	
-		else:
-			images = sorted(imageset)
-		
-		comms = []
-		args = []
-		groups = []
-		
-		with open(commands_path, 'r') as command_file:
-			for line in command_file:
-				if line.rstrip() == "":
-					continue
-				l = line.split(' ')
-				c, a, *g = l
-				#strip whitespace (newlines)
-				g[-1] = g[-1].rstrip()
-				comms.append(c)
-				args.append(a)
-				groups.append(g)
-
-		statements = []
-		for i in images:
-			s = ["gmic", "-i", "".join((input_folder, i))]
-			for index in range(len(comms)):
-				for g in groups[index]:
-					if g not in subset_dict:
-						print("Group: " + g + " not recognized")
-					else:
-						if i in subset_dict[g]:
-							s.append(comms[index])
-							s.append(args[index])
-			s.append("-o")
-			s.append("".join((output_folder, i)))
-			statements.append(s)
-			
-		for path, _, _ in os.walk(input_folder):
-			in_f = path.split(input_folder)[-1]
-			out_f = "".join((output_folder, in_f))
-			if not os.path.exists(out_f):
-				os.makedirs(out_f)
-
-		for index, s in enumerate(statements):
-			if index == command.n:
-				return
-			subprocess.call(s, shell = True)
-
-	@staticmethod
-	def walk(command):
-		set_subsets(walk_input_directory())
-	
 
 def main(args = None):
 	#main parser and the parent to allow splitting on the first argument
@@ -249,7 +22,7 @@ def main(args = None):
 	#initialize directory
 	init_parser    = command_parser.add_parser("init", 
 						description = "initialize directory for tracking, capturing, and processing operations on a set of images")
-	commands["init"] = Command.init
+	commands["init"] = CLI.init
 	
 	#capture commands
 	capture_parser = command_parser.add_parser("capture", 
@@ -258,12 +31,12 @@ def main(args = None):
 						help = "the amount of commands to capture. Omit to capture all commands.  Must be entered first to allow maximum flexibility in allowed folder/group names")
 	capture_parser.add_argument("groups", nargs = argparse.REMAINDER, 
 						help = "list of all groups this is applied to.  Omit to affect all images.")
-	commands["capture"] = Command.capture
+	commands["capture"] = CLI.capture
 	
 	#inspect uncaptured commands
 	inspect_parser = command_parser.add_parser("inspect", 
 						description = "inspect a series of actions not captured yet from the gmic logfile")
-	commands["inspect"] = Command.inspect
+	commands["inspect"] = CLI.inspect
 	
 	#flush unneeded commands
 	flush_parser   = command_parser.add_parser("flush", 
@@ -272,7 +45,7 @@ def main(args = None):
 						help = "amount of commands to remove from gmic logfile, starting with the oldest")
 	flush_parser.add_argument("-a" , action = "store_true", 
 						help = "flush all commands from logfile.  Cannot specify with a given amount simultaneously")
-	commands["flush"] = Command.flush
+	commands["flush"] = CLI.flush
 	
 	#apply commands to image(s)
 	apply_parser   = command_parser.add_parser("apply", description = "apply set of commands to one or more images")
@@ -288,11 +61,11 @@ def main(args = None):
 						help = "applies to all images in directory")
 	apply_parser.add_argument("groups", nargs = argparse.REMAINDER, 
 						help = "groups to apply command chain to")
-	commands["apply"] = Command.apply
+	commands["apply"] = CLI.apply
 	
 	#walk input directory
 	walk_parser    = command_parser.add_parser("walk", description = "walk the input directory and set the group names from it")
-	commands["walk"] = Command.walk
+	commands["walk"] = CLI.walk
 	
 	if args:
 		input = cli_parser.parse_args(args)
