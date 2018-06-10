@@ -165,4 +165,4 @@ def walk(command):
 	Groups.set_subsets(Input.walk_input_directory())
 	
 def test(command):
-	pass
+	test_CommandLog.main()
