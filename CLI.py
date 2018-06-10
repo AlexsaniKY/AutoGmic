@@ -2,6 +2,8 @@ from fileio import Groups
 from fileio import GmicLog
 from fileio import Input
 
+from test.fileio import test_CommandLog
+
 from glob import glob
 from collections import deque
 
