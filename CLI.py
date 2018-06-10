@@ -55,7 +55,9 @@ def apply(command):
 	# truncate if maximum number is supplied
 	#
 	# get commands, groups from command file
-	# 
+	# build gmic cli commands
+	# make sure directory exists for output files
+	# invoke gmic cli
 	if not (command.f or command.a or command.n):
 		print("must specify filename, n quantity or all flag")
 		return
@@ -159,3 +161,6 @@ def apply(command):
 
 def walk(command):
 	Groups.set_subsets(Input.walk_input_directory())
+	
+def test(command):
+	pass

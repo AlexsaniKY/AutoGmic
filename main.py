@@ -63,6 +63,9 @@ def main(args = None):
 	walk_parser    = command_parser.add_parser("walk", description = "walk the input directory and set the group names from it")
 	commands["walk"] = CLI.walk
 	
+	test_parser    = command_parser.add_parser("test", description = "run regression tests to ensure correct functionality")
+	commands["test"] = CLI.test
+	
 	if args:
 		input = cli_parser.parse_args(args)
 	else:
